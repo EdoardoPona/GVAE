@@ -88,3 +88,5 @@ for adj_norm, features, label in dataset:
     if e % 10 == 0:
         print('total', losses[-1], 'rec', reconstruction[-1], 'classification', classification_losses[-1], 'kl', kl_losses[-1])
     e+=1
+
+## TODO make training a util function that takes in only experiment params and saved a trained model somewhere

@@ -71,7 +71,5 @@ class GM_VGAE(Model):
                 scale_diag = tf.exp(log_std)
             )
         )
-        Q.sample(1)
-        
         reconstruction = self.decoder(tf.squeeze(self.Q.sample(1), axis=0))
         return self.Q, log_std, reconstruction

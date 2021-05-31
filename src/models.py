@@ -1,6 +1,9 @@
 from layers import GraphConvolution, InnerProductDecoder 
 from tensorflow.keras import Model
+import tensorflow as tf
+import tensorflow_probability as tfp
 
+tfd = tfp.distributions
 
 class VGAE(Model):
   
@@ -68,6 +71,7 @@ class GM_VGAE(Model):
                 scale_diag = tf.exp(log_std)
             )
         )
-
+        Q.sample(1)
+        
         reconstruction = self.decoder(tf.squeeze(self.Q.sample(1), axis=0))
         return self.Q, log_std, reconstruction

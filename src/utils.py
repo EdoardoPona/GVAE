@@ -166,7 +166,7 @@ def load_and_build_dataset(experiment_params, network_path, labels_path, epochs=
     features = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*features)))
 
     # TODO the dataset could return also the norm 
-    return adj, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
+    return adj, target, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
                                               [tf.cast(features, tf.float32)], 
                                               [tf.cast(labels, tf.float32)])).repeat(epochs)
 

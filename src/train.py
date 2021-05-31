@@ -1,5 +1,5 @@
 import tensorflow as tf 
-import tensorflow_probaility as tfp
+import tensorflow_probability as tfp
 from models import GM_VGAE, VGAE
 from utils import *
 
@@ -67,9 +67,10 @@ experiment_params = {
     'auxiliary_pred_dim': None     # will be filled later
 }
 
-network_path = 'PATHTONETWORK'
-labels_path = 'PATHTOLABELS'
-adj, dataset = load_and_build_dataset(experiment_params, network_path, labels_path)
+network_path = 'data/diseasome/disease_network_adj.npy'
+labels_path = 'data/diseasome/disease_network_types.npy'
+
+adj, target, dataset = load_and_build_dataset(experiment_params, network_path, labels_path, epochs=100)
 
 pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()
 norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)
@@ -78,13 +79,12 @@ norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.su
 node_num = adj.shape[0]
 class_num = target.shape[1]
 model = GM_VGAE(node_num=adj.shape[0], class_num=target.shape[1])
-    
 
 e = 0
 for adj_norm, features, label in dataset:
-    train_step(adj_norm, features, label, class_targets=target, model_type='gmvgae')
+    train_step(adj_norm, features, label, norm, pos_weight, class_targets=target, model_type='gmvgae')
     # train_step(adj_norm, features, label)
 
-    if e % 100 == 0:
+    if e % 10 == 0:
         print('total', losses[-1], 'rec', reconstruction[-1], 'classification', classification_losses[-1], 'kl', kl_losses[-1])
     e+=1

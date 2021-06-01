@@ -94,7 +94,6 @@ def train(experiment_params):
         model = GM_VGAE(node_num=node_num, 
                         class_num=class_num, 
                         hidden=experiment_params['hidden'],
-                        class_num=class_num,
                         dropout=experiment_params['dropout'])
 
     # training loop

@@ -107,4 +107,9 @@ def train(experiment_params):
     print('saving model')
     model.save_weights(experiment_params['save_path'])
 
-
+    return {
+        'total': losses, 
+        'reconstruction': reconstruction, 
+        'kl': kl_losses, 
+        'classification_losses': classification_losses
+        }

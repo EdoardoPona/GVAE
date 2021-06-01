@@ -6,6 +6,8 @@ import tensorflow_probability as tfp
 from models import GM_VGAE, VGAE
 from utils import *
 
+tfd = tensorflow_probability.distributions
+
 """
 experiment_params = {
     'network_path': 'data/diseasome/disease_network_adj.npy',
@@ -16,7 +18,8 @@ experiment_params = {
     'latent_size': 16,
     'dropout': 0.2 ,
     'model': 'VGAE',
-    'use_features': True,      # whether to use features (1) or not (0)
+    'use_features': True,      
+    'auxiliary_prediction_task': True,
     'save_path' = 'saved/diseasome/' 
 } 
 """
@@ -30,8 +33,9 @@ def train(experiment_params):
     losses = []
     classification_losses = []
  
-    def train_step(adj_normalized, features, adj_label, norm, pos_weight, class_targets=None, model_type='vgae'):   
-        assert model_type in ['vgae', 'gmvgae']
+    def train_step(adj_normalized, features, adj_label, norm, pos_weight, experiment_params, class_targets=None):   
+        model_type = experiment_params['model']
+        assert model_type in ['VGAE', 'GM_VGAE']
         assert ((model_type=='vgae' and class_targets is None) or (model_type=='gmvgae'))
 
 
@@ -44,7 +48,7 @@ def train(experiment_params):
                 tf.nn.weighted_cross_entropy_with_logits(labels=adj_label, logits=reconstructed, pos_weight=pos_weight)
             ) 
 
-            if model_type == 'vgae':
+            if model_type == 'VGAE':
                 kl = (0.5 / adj_label.shape[0]) * tf.math.reduce_mean(
                     tf.math.reduce_sum(1 + 2 * Q_log_std - tf.math.square(Q.loc) - tf.math.square(Q.scale), axis=1)
                 ) 
@@ -54,12 +58,12 @@ def train(experiment_params):
             else:
                 kl = tf.reduce_mean(mc_kl_divergence(Q, model.prior))
                 # kl = tf.reduce_mean(kl_divergence_upper_bound(Q, model.prior))
-                if class_targets is None:
-                    classification_loss = 0
-                else: 
+                if experiment_params['auxiliary_prediction_task']:
                     classification_loss = tf.reduce_mean(
                         tf.nn.softmax_cross_entropy_with_logits(logits=model.cy_logits, labels=class_targets)
                     )
+                else: 
+                    classification_loss = 0
             
             vae_loss = reconstruction_loss + beta*kl + classification_loss
 
@@ -97,8 +101,7 @@ def train(experiment_params):
 
     e = 0
     for adj_norm, features, label in dataset:
-        train_step(adj_norm, features, label, norm, pos_weight, class_targets=target, model_type='gmvgae')
-        # train_step(adj_norm, features, label)
+        train_step(adj_norm, features, label, norm, pos_weight, experiment_params, class_targets=target)
 
         if e % 100 == 0:
             print('total', losses[-1], 'rec', reconstruction[-1], 'classification', classification_losses[-1], 'kl', kl_losses[-1])

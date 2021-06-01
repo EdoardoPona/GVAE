@@ -113,6 +113,7 @@ def mask_test_edges(adj):
 def load_and_build_dataset(experiment_params):
 
     network_path = experiment_params['network_path']
+
     labels_path = experiment_params['labels_path']
 
     adj = load_network(network_path) 
@@ -126,17 +127,19 @@ def load_and_build_dataset(experiment_params):
     adj_normalized = preprocess_graph(adj)
 
 
-    target = load_network_labels(labels_path, one_hot=True)
-    print(target.shape)
-    experiment_params['auxiliary_pred_dim'] = target.shape[1]
-
-
     if experiment_params['use_features']:
-        features = sp.identity(adj.shape[0])  # featureless
-    else:
-        # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
-        # TODO why are the features a diagonal matrix? would a batch of one-hot vectors work? 
         features = sp.diags(load_network_labels(labels_path, one_hot=False))
+    else:
+        # NOTE why are the features a diagonal matrix? would a batch of one-hot vectors work? 
+        features = sp.identity(adj.shape[0])  # featureless
+
+        # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
+
+    if experiment_params['auxiliary_predicion_task']:
+        target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
+    else:
+        target = None 
+
 
     features = sparse_to_tuple(features.tocoo())
 
@@ -153,6 +156,7 @@ def load_and_build_dataset(experiment_params):
     features = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*features)))
 
     epochs = experiment_params['epochs']
+
     return adj, target, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
                                               [tf.cast(features, tf.float32)], 
                                               [tf.cast(labels, tf.float32)])).repeat(epochs)

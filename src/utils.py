@@ -110,24 +110,10 @@ def mask_test_edges(adj):
     return adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false
 
 
-def load_and_build_dataset(experiment_params, network_path, labels_path, epochs=1000):
-    # network_path = diseasome_network_path
-    # labels_path = diseasome_labels_path
+def load_and_build_dataset(experiment_params):
 
-    # network_path = debarment_network_path
-    # labels_path = debarment_labels_path 
-
-    '''experiment_params = {
-        'learning_rate': 1e-2,
-        'epochs': 200,
-        'hidden1': 32,
-        'hidden2': 16,
-        'weight_decay': 0. ,
-        'dropout': 0.2 ,
-        'model': 'vae',
-        'features': 1,      # whether to use features (1) or not (0)
-        'auxiliary_pred_dim': None     # will be filled later
-    }'''
+    network_path = experiment_params['network_path']
+    labels_path = experiment_params['labels_path']
 
     adj = load_network(network_path) 
     adj_orig = adj
@@ -140,13 +126,12 @@ def load_and_build_dataset(experiment_params, network_path, labels_path, epochs=
     adj_normalized = preprocess_graph(adj)
 
 
-    # target = np.ones((100, 6))
     target = load_network_labels(labels_path, one_hot=True)
     print(target.shape)
     experiment_params['auxiliary_pred_dim'] = target.shape[1]
 
 
-    if experiment_params['features'] == 0:
+    if experiment_params['use_features']:
         features = sp.identity(adj.shape[0])  # featureless
     else:
         # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
@@ -154,8 +139,10 @@ def load_and_build_dataset(experiment_params, network_path, labels_path, epochs=
         features = sp.diags(load_network_labels(labels_path, one_hot=False))
 
     features = sparse_to_tuple(features.tocoo())
-    num_features = features[2][1]
-    features_nonzero = features[1].shape[0]
+
+    # for using sparse input layer 
+    # num_features = features[2][1]
+    # features_nonzero = features[1].shape[0]
 
     adj_label = adj_train + sp.eye(adj_train.shape[0])
     adj_label = tf.sparse.SparseTensor(*sparse_to_tuple(adj_label))
@@ -165,7 +152,7 @@ def load_and_build_dataset(experiment_params, network_path, labels_path, epochs=
     adj_normalized = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*adj_normalized)))     
     features = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*features)))
 
-    # TODO the dataset could return also the norm 
+    epochs = experiment_params['epochs']
     return adj, target, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
                                               [tf.cast(features, tf.float32)], 
                                               [tf.cast(labels, tf.float32)])).repeat(epochs)

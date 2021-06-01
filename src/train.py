@@ -74,11 +74,7 @@ def train(experiment_params):
         losses.append(vae_loss.numpy())
         classification_losses.append(classification_loss.numpy())
 
-
-    network_path = experiment_params['network_path']
-    labels_path = experiment_params['labels_path']
-    adj, target, dataset = load_and_build_dataset(experiment_params, network_path, labels_path, epochs=100)
-
+    adj, target, dataset = load_and_build_dataset(experiment_params)
 
     pos_weight = float(adj.shape[0] * adj.shape[0] - adj.sum()) / adj.sum()
     norm = adj.shape[0] * adj.shape[0] / float((adj.shape[0] * adj.shape[0] - adj.sum()) * 2)

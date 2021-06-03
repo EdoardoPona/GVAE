@@ -36,7 +36,7 @@ def train(experiment_params):
     def train_step(adj_normalized, features, adj_label, norm, pos_weight, experiment_params, class_targets=None):   
         model_type = experiment_params['model']
         assert model_type in ['VGAE', 'GM_VGAE']
-        assert ((model_type=='vgae' and class_targets is None) or (model_type=='gmvgae'))
+        assert ((model_type=='VGAE' and class_targets is None) or (model_type=='GM_VGAE'))
 
 
         with tf.GradientTape() as tape:

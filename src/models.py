@@ -24,11 +24,11 @@ class VGAE(Model):
         h = self.shared(adj, features)  
         mean = self.gcn_mean(adj, h)    
         log_std = self.gcn_log_std(adj, h)
-        Q = tfd.Normal(  # TODO this should actually be a real multivariate normal, not a a batch of normals 
+        self.Q = tfd.Normal(  # TODO this should actually be a real multivariate normal, not a a batch of normals 
             loc=mean, scale=tf.exp(log_std)
         )
         reconstruction = self.decoder(tf.squeeze(Q.sample(1)))
-        return Q, log_std, reconstruction
+        return self.Q, log_std, reconstruction
 
 
 class GM_VGAE(Model):

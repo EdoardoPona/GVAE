@@ -3,8 +3,9 @@ from tensorflow.python.keras import models
 from tensorflow.python.keras.engine import node
 from tensorflow.python.keras.engine.node import Node 
 import tensorflow_probability as tfp
-from models import GM_VGAE, VGAE
-from utils import *
+
+from src.models import GM_VGAE, VGAE
+from src.utils import *
 
 tfd = tfp.distributions
 
@@ -111,6 +112,7 @@ def train(experiment_params):
         print('saving model')
         model.save_weights(experiment_params['save_path'])
 
+    # TODO return target, for plotting (maybe also some input data ex. adj)
     return model, {
             'total': losses, 
             'reconstruction': reconstruction, 

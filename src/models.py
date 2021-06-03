@@ -1,4 +1,5 @@
-from layers import GraphConvolution, InnerProductDecoder 
+from src.layers import GraphConvolution, InnerProductDecoder 
+
 from tensorflow.keras import Model
 import tensorflow as tf
 import tensorflow_probability as tfp

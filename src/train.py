@@ -6,7 +6,7 @@ import tensorflow_probability as tfp
 from models import GM_VGAE, VGAE
 from utils import *
 
-tfd = tensorflow_probability.distributions
+tfd = tfp.distributions
 
 """
 experiment_params = {

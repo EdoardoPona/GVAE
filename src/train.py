@@ -24,7 +24,7 @@ experiment_params = {
 } 
 """
 
-def train(experiment_params):
+def train(experiment_params, train=True):
     assert experiment_params['model'] in ['VGAE', 'GM_VGAE']
 
     optimizer = tf.keras.optimizers.Adam(lr=experiment_params['learning_rate'])
@@ -110,7 +110,7 @@ def train(experiment_params):
     print('saving model')
     model.save_weights(experiment_params['save_path'])
 
-    return {
+    return model, {
         'total': losses, 
         'reconstruction': reconstruction, 
         'kl': kl_losses, 

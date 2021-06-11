@@ -157,9 +157,18 @@ def load_and_build_dataset(experiment_params):
 
     epochs = experiment_params['epochs']
 
-    return adj, target, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
+    ret = dict(
+        adj=adj, 
+        target=target, 
+        dataset=tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
                                               [tf.cast(features, tf.float32)], 
-                                              [tf.cast(labels, tf.float32)])).repeat(epochs)
+                                              [tf.cast(labels, tf.float32)])).repeat(epochs),
+        val_edges=val_edges,
+        val_edges_false=val_edges_false,
+        test_edges=test_edges,
+        test_edges_false=test_edges_false
+    )
+    return ret 
 
 NUM_MC_SAMPLES = 50
 def mc_kl_divergence(P, Q, seed=None):

@@ -135,10 +135,9 @@ def load_and_build_dataset(experiment_params):
 
         # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
 
-    if experiment_params['auxiliary_prediction_task']:
-        target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
-    else:
-        target = None 
+    
+    # generating regardless of the task, in any case they are used for plotting 
+    target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
 
 
     features = sparse_to_tuple(features.tocoo())

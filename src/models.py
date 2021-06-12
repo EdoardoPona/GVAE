@@ -15,19 +15,32 @@ class VGAE(Model):
         self.gcn_log_std = GraphConvolution(latent_size, dropout, activation=lambda x: x)
         self.decoder = InnerProductDecoder(dropout, activation=lambda x: x)
 
-        self.prior = tfd.Normal(
+        # self.prior = tfd.Normal(
+        #     loc=tf.fill((node_num, latent_size), 0.0),
+        #     scale=tf.fill((node_num, latent_size), 1.0)
+        # )
+
+        self.prior = tfd.MultivariateNormalDiag(
             loc=tf.fill((node_num, latent_size), 0.0),
-            scale=tf.fill((node_num, latent_size), 1.0)
+            scale_diag=tf.fill((node_num, latent_size), 1.0)
+            
         )
+
 
     def call(self, adj, features): 
         h = self.shared(adj, features)  
         mean = self.gcn_mean(adj, h)    
         log_std = self.gcn_log_std(adj, h)
-        self.Q = tfd.Normal(  # TODO this should actually be a real multivariate normal, not a a batch of normals 
-            loc=mean, scale=tf.exp(log_std)
+        
+        # self.Q = tfd.Normal(  # TODO this should actually be a real multivariate normal, not a a batch of normals 
+        #     loc=mean, scale=tf.exp(log_std)
+        # )
+
+        self.Q = tfd.MultivariateNormalDiag(
+            loc=mean, 
+            scale_diag=tf.exp(log_std)
         )
-        reconstruction = self.decoder(tf.squeeze(Q.sample(1)))
+        reconstruction = self.decoder(tf.squeeze(self.Q.sample(1)))
         return self.Q, log_std, reconstruction
 
 

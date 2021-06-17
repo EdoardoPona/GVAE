@@ -135,10 +135,9 @@ def load_and_build_dataset(experiment_params):
 
         # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
 
-    if experiment_params['auxiliary_prediction_task']:
-        target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
-    else:
-        target = None 
+    
+    # generating regardless of the task, in any case they are used for plotting 
+    target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
 
 
     features = sparse_to_tuple(features.tocoo())
@@ -157,9 +156,18 @@ def load_and_build_dataset(experiment_params):
 
     epochs = experiment_params['epochs']
 
-    return adj, target, tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
+    ret = dict(
+        adj=adj, 
+        target=target, 
+        dataset=tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
                                               [tf.cast(features, tf.float32)], 
-                                              [tf.cast(labels, tf.float32)])).repeat(epochs)
+                                              [tf.cast(labels, tf.float32)])).repeat(epochs),
+        val_edges=val_edges,
+        val_edges_false=val_edges_false,
+        test_edges=test_edges,
+        test_edges_false=test_edges_false
+    )
+    return ret 
 
 NUM_MC_SAMPLES = 50
 def mc_kl_divergence(P, Q, seed=None):

@@ -3,8 +3,9 @@ from tensorflow.python.keras import models
 from tensorflow.python.keras.engine import node
 from tensorflow.python.keras.engine.node import Node 
 import tensorflow_probability as tfp
-from models import GM_VGAE, VGAE
-from utils import *
+
+from src.models import GM_VGAE, VGAE
+from src.utils import *
 
 tfd = tfp.distributions
 
@@ -36,7 +37,7 @@ def train(experiment_params):
     def train_step(adj_normalized, features, adj_label, norm, pos_weight, experiment_params, class_targets=None):   
         model_type = experiment_params['model']
         assert model_type in ['VGAE', 'GM_VGAE']
-        assert ((model_type=='vgae' and class_targets is None) or (model_type=='gmvgae'))
+        assert ((model_type=='VGAE' and class_targets is None) or (model_type=='GM_VGAE'))
 
 
         with tf.GradientTape() as tape:
@@ -107,12 +108,14 @@ def train(experiment_params):
             print('total', losses[-1], 'rec', reconstruction[-1], 'classification', classification_losses[-1], 'kl', kl_losses[-1])
         e+=1
 
-    print('saving model')
-    model.save_weights(experiment_params['save_path'])
+    if experiment_params['save_path'] is not None:
+        print('saving model')
+        model.save_weights(experiment_params['save_path'])
 
-    return {
-        'total': losses, 
-        'reconstruction': reconstruction, 
-        'kl': kl_losses, 
-        'classification_losses': classification_losses
-        }
+    # TODO return target, for plotting (maybe also some input data ex. adj)
+    return model, {
+            'total': losses, 
+            'reconstruction': reconstruction, 
+            'kl': kl_losses, 
+            'classification_losses': classification_losses
+            }

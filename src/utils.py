@@ -8,6 +8,8 @@ from sklearn.metrics import roc_auc_score
 from sklearn.metrics import average_precision_score
 
 
+## TODO load sparse graphs 
+
 def load_network(path):
     # return sp.csr_matrix(np.load('data/diseasome/disease_network_adj.npy'))
     return sp.csr_matrix(np.load(path))

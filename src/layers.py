@@ -8,15 +8,16 @@ class GraphConvolution(Model):
     def __init__(self, output_dim, dropout=0.2, activation=tf.nn.relu):
         super(GraphConvolution, self).__init__()
         self.dropout = tfkl.Dropout(dropout)
-        self.dense = tfkl.Dense(output_dim, use_bias=False, kernel_initializer='glorot_uniform')
+        self.fully_connected = tfkl.Dense(output_dim, use_bias=False, kernel_initializer='glorot_uniform')
         self.activation = activation
 
     def call(self, adj, features):
         x = self.dropout(features)
-        x = self.dense(x)
-        x = tf.matmul(adj, x)
+        x = self.fully_connected(x)
+        x = tf.sparse.sparse_dense_matmul(adj, x)
         outputs = self.activation(x)
         return outputs
+
 
 
 class InnerProductDecoder(Model):

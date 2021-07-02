@@ -135,12 +135,9 @@ def load_and_build_dataset(experiment_params):
         # NOTE why are the features a diagonal matrix? would a batch of one-hot vectors work? 
         features = sp.identity(adj.shape[0])  # featureless
 
-        # features = sp.diags(load_regions(WORKING_PATH, YEAR, one_hot=False)[:100])
-
     
     # generating regardless of the task, in any case they are used for plotting 
     target = load_network_labels(labels_path, one_hot=True)    # auxiliary targets 
-
 
     features = sparse_to_tuple(features.tocoo())
 
@@ -152,18 +149,24 @@ def load_and_build_dataset(experiment_params):
     adj_label = tf.sparse.SparseTensor(*sparse_to_tuple(adj_label))
 
     # labels = tf.reshape(tf.sparse.to_dense(tf.sparse.reorder(adj_label), validate_indices=False), [-1])
-    labels = tf.sparse.to_dense(tf.sparse.reorder(adj_label), validate_indices=False)
-    adj_normalized = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*adj_normalized)))     
-    features = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*features)))
+    labels = tf.sparse.reorder(adj_label)
+    # adj_normalized = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*adj_normalized)))     
+    adj_normalized = tf.sparse.reorder(tf.sparse.SparseTensor(*adj_normalized))
+
+    # features = tf.sparse.to_dense(tf.sparse.reorder(tf.sparse.SparseTensor(*features)))
+    features = tf.sparse.reorder(tf.sparse.SparseTensor(*features))
 
     epochs = experiment_params['epochs']
 
     ret = dict(
         adj=adj, 
         target=target, 
-        dataset=tf.data.Dataset.from_tensor_slices(([tf.cast(adj_normalized, tf.float32)],
-                                              [tf.cast(features, tf.float32)], 
-                                              [tf.cast(labels, tf.float32)])).repeat(epochs),
+        # dataset=tf.data.Dataset.from_tensors(([tf.cast(adj_normalized, tf.float32)],
+        #                                       [tf.cast(features, tf.float32)], 
+        #                                       [tf.cast(labels, tf.float32)])).repeat(epochs),
+        dataset=tf.data.Dataset.from_tensors((tf.sparse.expand_dims(tf.cast(adj_normalized, tf.float32), 0), 
+                                              tf.sparse.expand_dims(tf.cast(features, tf.float32), 0), 
+                                              tf.sparse.expand_dims(tf.cast(labels, tf.float32), 0))).repeat(epochs),
         val_edges=val_edges,
         val_edges_false=val_edges_false,
         test_edges=test_edges,

@@ -10,10 +10,12 @@ from sklearn.metrics import average_precision_score
 
 def load_network(path):
     # return sp.csr_matrix(np.load('data/diseasome/disease_network_adj.npy'))
+    if 'npz' in path: 
+        return sp.load_npz(path)
     return sp.csr_matrix(np.load(path))
 
 def load_network_labels(path, one_hot=False):
-    data = np.load(path) 
+    data = np.load(path, allow_pickle=True) 
     data = LabelEncoder().fit_transform(data)
     if one_hot:
         return OneHotEncoder(sparse=False).fit_transform(np.array(data).reshape((-1, 1)))
@@ -117,9 +119,13 @@ def load_and_build_dataset(experiment_params):
     labels_path = experiment_params['labels_path']
 
     adj = load_network(network_path) 
+    print(adj.shape)
+
     adj_orig = adj
     adj_orig = adj_orig - sp.dia_matrix((adj_orig.diagonal()[np.newaxis, :], [0]), shape=adj_orig.shape)
     adj_orig.eliminate_zeros()
+
+    print(adj.shape)
 
     adj_train, train_edges, val_edges, val_edges_false, test_edges, test_edges_false = mask_test_edges(adj)
     adj = adj_train
